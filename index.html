@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a0a0f">
+    <meta name="description" content="Aplikasi Pengatur Keuangan Offline">
+    <title>Pengatur Keuangan</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="icons/icon-192.svg">
+    <link rel="apple-touch-icon" href="icons/icon-192.svg">
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-top">
+                <span class="greeting" id="greeting">Selamat Pagi</span>
+                <h1>💰</h1>
+            </div>
+            <div class="balance-card">
+                <span class="balance-label">Saldo Bulan Ini</span>
+                <div class="balance-amount" id="currentBalance">Rp 0</div>
+                <div class="balance-stats">
+                    <div class="stat">
+                        <span class="stat-icon income">↑</span>
+                        <div class="stat-info">
+                            <span class="stat-label">Masuk</span>
+                            <span class="stat-value" id="totalIncome">Rp 0</span>
+                        </div>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-icon expense">↓</span>
+                        <div class="stat-info">
+                            <span class="stat-label">Keluar</span>
+                            <span class="stat-value" id="totalExpense">Rp 0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-tab="dashboard">
+                <span class="tab-icon">📊</span>
+                <span>Home</span>
+            </button>
+            <button class="nav-tab" data-tab="transactions">
+                <span class="tab-icon">💳</span>
+                <span>Transaksi</span>
+            </button>
+            <button class="nav-tab" data-tab="budget">
+                <span class="tab-icon">🎯</span>
+                <span>Anggaran</span>
+            </button>
+            <button class="nav-tab" data-tab="goals">
+                <span class="tab-icon">💎</span>
+                <span>Tabungan</span>
+            </button>
+            <button class="nav-tab" data-tab="more">
+                <span class="tab-icon">⋯</span>
+                <span>Lainnya</span>
+            </button>
+        </nav>
+
+        <!-- Content Sections -->
+        <main class="content">
+            <!-- Dashboard Section -->
+            <section class="tab-content active" id="dashboard">
+                <!-- Quick Stats -->
+                <div class="quick-stats">
+                    <div class="quick-stat-card needs">
+                        <span class="qs-icon">🎯</span>
+                        <div class="qs-info">
+                            <span class="qs-label">Butuh</span>
+                            <span class="qs-value" id="needsTotal">Rp 0</span>
+                        </div>
+                    </div>
+                    <div class="quick-stat-card wants">
+                        <span class="qs-icon">💫</span>
+                        <div class="qs-info">
+                            <span class="qs-label">Ingin</span>
+                            <span class="qs-value" id="wantsTotal">Rp 0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Tren 6 Bulan</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Category Summary -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Pengeluaran per Kategori</h3>
+                    </div>
+                    <div id="categoryList" class="category-list">
+                        <!-- Categories will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Upcoming Reminders -->
+                <div class="card" id="upcomingRemindersCard">
+                    <div class="card-header">
+                        <h3>Tagihan Mendatang</h3>
+                    </div>
+                    <div id="upcomingReminders" class="reminder-list mini">
+                        <!-- Reminders will be inserted here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Transactions Section -->
+            <section class="tab-content" id="transactions">
+                <div class="section-header">
+                    <h2>Riwayat Transaksi</h2>
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" data-filter="all">Semua</button>
+                        <button class="filter-btn" data-filter="income">Masuk</button>
+                        <button class="filter-btn" data-filter="expense">Keluar</button>
+                    </div>
+                </div>
+                <div id="transactionList" class="transaction-list">
+                    <!-- Transactions will be inserted here -->
+                </div>
+            </section>
+
+            <!-- Budget Section -->
+            <section class="tab-content" id="budget">
+                <div class="section-header">
+                    <h2>Anggaran Bulanan</h2>
+                    <button class="btn-icon" id="addBudgetBtn">+</button>
+                </div>
+                <div id="budgetList" class="budget-list">
+                    <!-- Budgets will be inserted here -->
+                </div>
+            </section>
+
+            <!-- Goals Section -->
+            <section class="tab-content" id="goals">
+                <div class="section-header">
+                    <h2>Target Tabungan</h2>
+                    <button class="btn-icon" id="addGoalBtn">+</button>
+                </div>
+                <div id="goalList" class="goal-list">
+                    <!-- Goals will be inserted here -->
+                </div>
+            </section>
+
+            <!-- More Section -->
+            <section class="tab-content" id="more">
+                <div class="section-header">
+                    <h2>Menu Lainnya</h2>
+                </div>
+
+                <!-- Plans -->
+                <div class="card">
+                    <div class="card-header clickable" id="togglePlans">
+                        <h3>📝 Rencana Belanja</h3>
+                        <span class="chevron">›</span>
+                    </div>
+                    <div id="planSection" class="collapsible">
+                        <div class="priority-legend">
+                            <span class="priority-item p5">🔴 Urgent</span>
+                            <span class="priority-item p3">🟡 Sedang</span>
+                            <span class="priority-item p1">🟢 Rendah</span>
+                        </div>
+                        <div id="planList" class="plan-list">
+                            <!-- Plans will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reminders -->
+                <div class="card">
+                    <div class="card-header clickable" id="toggleReminders">
+                        <h3>🔔 Pengingat Tagihan</h3>
+                        <span class="chevron">›</span>
+                    </div>
+                    <div id="reminderSection" class="collapsible">
+                        <div id="reminderList" class="reminder-list">
+                            <!-- Reminders will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reports -->
+                <div class="card">
+                    <div class="card-header clickable" id="toggleReports">
+                        <h3>📈 Laporan Keuangan</h3>
+                        <span class="chevron">›</span>
+                    </div>
+                    <div id="reportSection" class="collapsible">
+                        <div class="report-summary" id="reportSummary">
+                            <!-- Report will be inserted here -->
+                        </div>
+                        <button class="btn btn-outline" id="exportBtn">
+                            📤 Export ke CSV
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Floating Action Button -->
+        <button class="fab" id="fabBtn">+</button>
+
+        <!-- FAB Menu -->
+        <div class="fab-menu" id="fabMenu">
+            <button class="fab-item" data-action="income">
+                <span class="fab-icon">💵</span>
+                <span>Pemasukan</span>
+            </button>
+            <button class="fab-item" data-action="expense">
+                <span class="fab-icon">💸</span>
+                <span>Pengeluaran</span>
+            </button>
+            <button class="fab-item" data-action="plan">
+                <span class="fab-icon">📝</span>
+                <span>Rencana</span>
+            </button>
+            <button class="fab-item" data-action="reminder">
+                <span class="fab-icon">🔔</span>
+                <span>Pengingat</span>
+            </button>
+        </div>
+        <div class="fab-overlay" id="fabOverlay"></div>
+
+        <!-- Transaction Modal -->
+        <div class="modal" id="transactionModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="modalTitle">Tambah Transaksi</h3>
+                    <button class="modal-close" id="closeModal">&times;</button>
+                </div>
+                <form id="transactionForm">
+                    <input type="hidden" id="transactionId">
+                    <input type="hidden" id="transactionType" value="expense">
+
+                    <div class="form-group">
+                        <label for="amount">Jumlah (Rp)</label>
+                        <input type="number" id="amount" required placeholder="0" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Keterangan</label>
+                        <input type="text" id="description" required placeholder="Contoh: Makan siang">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">Kategori</label>
+                        <select id="category" required>
+                            <option value="">Pilih Kategori</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="needWantGroup">
+                        <label>Jenis</label>
+                        <div class="toggle-group">
+                            <label class="toggle-option">
+                                <input type="radio" name="needWant" value="need" checked>
+                                <span>🎯 Butuh</span>
+                            </label>
+                            <label class="toggle-option">
+                                <input type="radio" name="needWant" value="want">
+                                <span>💫 Ingin</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="date">Tanggal</label>
+                        <input type="date" id="date" required>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-ghost" id="cancelBtn">Batal</button>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Plan Modal -->
+        <div class="modal" id="planModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="planModalTitle">Tambah Rencana</h3>
+                    <button class="modal-close" id="closePlanModal">&times;</button>
+                </div>
+                <form id="planForm">
+                    <input type="hidden" id="planId">
+
+                    <div class="form-group">
+                        <label for="planName">Nama Barang</label>
+                        <input type="text" id="planName" required placeholder="Contoh: Laptop baru">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="planAmount">Estimasi Biaya (Rp)</label>
+                        <input type="number" id="planAmount" required placeholder="0" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Prioritas</label>
+                        <div class="priority-selector">
+                            <label class="priority-option">
+                                <input type="radio" name="priority" value="1">
+                                <span class="priority-badge p1">1</span>
+                            </label>
+                            <label class="priority-option">
+                                <input type="radio" name="priority" value="2">
+                                <span class="priority-badge p2">2</span>
+                            </label>
+                            <label class="priority-option">
+                                <input type="radio" name="priority" value="3" checked>
+                                <span class="priority-badge p3">3</span>
+                            </label>
+                            <label class="priority-option">
+                                <input type="radio" name="priority" value="4">
+                                <span class="priority-badge p4">4</span>
+                            </label>
+                            <label class="priority-option">
+                                <input type="radio" name="priority" value="5">
+                                <span class="priority-badge p5">5</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Jenis</label>
+                        <div class="toggle-group">
+                            <label class="toggle-option">
+                                <input type="radio" name="planNeedWant" value="need" checked>
+                                <span>🎯 Butuh</span>
+                            </label>
+                            <label class="toggle-option">
+                                <input type="radio" name="planNeedWant" value="want">
+                                <span>💫 Ingin</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="planNote">Catatan</label>
+                        <textarea id="planNote" placeholder="Opsional..."></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-ghost" id="cancelPlanBtn">Batal</button>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Budget Modal -->
+        <div class="modal" id="budgetModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="budgetModalTitle">Atur Anggaran</h3>
+                    <button class="modal-close" id="closeBudgetModal">&times;</button>
+                </div>
+                <form id="budgetForm">
+                    <input type="hidden" id="budgetId">
+
+                    <div class="form-group">
+                        <label for="budgetCategory">Kategori</label>
+                        <select id="budgetCategory" required>
+                            <option value="">Pilih Kategori</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="budgetLimit">Batas Pengeluaran (Rp)</label>
+                        <input type="number" id="budgetLimit" required placeholder="0" min="0">
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-ghost" id="cancelBudgetBtn">Batal</button>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Goal Modal -->
+        <div class="modal" id="goalModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="goalModalTitle">Target Tabungan Baru</h3>
+                    <button class="modal-close" id="closeGoalModal">&times;</button>
+                </div>
+                <form id="goalForm">
+                    <input type="hidden" id="goalId">
+
+                    <div class="form-group">
+                        <label for="goalName">Nama Target</label>
+                        <input type="text" id="goalName" required placeholder="Contoh: Dana Darurat">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="goalTarget">Jumlah Target (Rp)</label>
+                        <input type="number" id="goalTarget" required placeholder="0" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="goalIcon">Ikon</label>
+                        <div class="icon-selector" id="goalIconSelector">
+                            <button type="button" class="icon-btn active" data-icon="💰">💰</button>
+                            <button type="button" class="icon-btn" data-icon="🏠">🏠</button>
+                            <button type="button" class="icon-btn" data-icon="🚗">🚗</button>
+                            <button type="button" class="icon-btn" data-icon="✈️">✈️</button>
+                            <button type="button" class="icon-btn" data-icon="📱">📱</button>
+                            <button type="button" class="icon-btn" data-icon="💻">💻</button>
+                            <button type="button" class="icon-btn" data-icon="🎓">🎓</button>
+                            <button type="button" class="icon-btn" data-icon="💍">💍</button>
+                        </div>
+                        <input type="hidden" id="goalIcon" value="💰">
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-ghost" id="cancelGoalBtn">Batal</button>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Add to Goal Modal -->
+        <div class="modal" id="addToGoalModal">
+            <div class="modal-content modal-small">
+                <div class="modal-header">
+                    <h3>Tambah Tabungan</h3>
+                    <button class="modal-close" id="closeAddToGoalModal">&times;</button>
+                </div>
+                <form id="addToGoalForm">
+                    <input type="hidden" id="addToGoalId">
+                    <p class="modal-subtitle" id="addToGoalInfo">Menabung untuk: </p>
+
+                    <div class="form-group">
+                        <label for="addToGoalAmount">Jumlah (Rp)</label>
+                        <input type="number" id="addToGoalAmount" required placeholder="0" min="0">
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-ghost" id="cancelAddToGoalBtn">Batal</button>
+                        <button type="submit" class="btn btn-primary">Tambah</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Reminder Modal -->
+        <div class="modal" id="reminderModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="reminderModalTitle">Pengingat Baru</h3>
+                    <button class="modal-close" id="closeReminderModal">&times;</button>
+                </div>
+                <form id="reminderForm">
+                    <input type="hidden" id="reminderId">
+
+                    <div class="form-group">
+                        <label for="reminderName">Nama Tagihan</label>
+                        <input type="text" id="reminderName" required placeholder="Contoh: Listrik">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reminderAmount">Perkiraan Biaya (Rp)</label>
+                        <input type="number" id="reminderAmount" required placeholder="0" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reminderDueDate">Jatuh Tempo</label>
+                        <input type="date" id="reminderDueDate" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Berulang?</label>
+                        <div class="toggle-group">
+                            <label class="toggle-option">
+                                <input type="radio" name="reminderRecurring" value="no" checked>
+                                <span>Sekali</span>
+                            </label>
+                            <label class="toggle-option">
+                                <input type="radio" name="reminderRecurring" value="yes">
+                                <span>Bulanan</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-ghost" id="cancelReminderBtn">Batal</button>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Delete Confirmation Modal -->
+        <div class="modal" id="deleteModal">
+            <div class="modal-content modal-small">
+                <div class="delete-icon">🗑️</div>
+                <h3>Hapus Item?</h3>
+                <p class="modal-subtitle">Tindakan ini tidak dapat dibatalkan</p>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-ghost" id="cancelDelete">Batal</button>
+                    <button type="button" class="btn btn-danger" id="confirmDelete">Hapus</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker registration failed:', err));
+            });
+        }
+    </script>
+</body>
+
+</html>
