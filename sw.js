@@ -1,13 +1,13 @@
-const CACHE_NAME = 'finance-app-v2';
+const CACHE_NAME = 'finance-app-v3';
 const urlsToCache = [
-    '/',
-    '/index.html',
-    '/css/style.css',
-    '/js/db.js',
-    '/js/app.js',
-    '/manifest.json',
-    '/icons/icon-192.svg',
-    '/icons/icon-512.svg',
+    './',
+    './index.html',
+    './css/style.css',
+    './js/db.js',
+    './js/app.js',
+    './manifest.json',
+    './icons/icon-192.svg',
+    './icons/icon-512.svg',
     'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap',
     'https://cdn.jsdelivr.net/npm/chart.js'
 ];
