@@ -1,4 +1,4 @@
-const CACHE_NAME = 'finance-app-v3';
+const CACHE_NAME = 'finance-app-v4';
 const urlsToCache = [
     './',
     './index.html',
@@ -22,7 +22,7 @@ self.addEventListener('install', event => {
             })
             .catch(err => console.log('Cache error:', err))
     );
-    self.skipWaiting();
+    // Don't skipWaiting here — let user decide via the update toast
 });
 
 // Activate event
@@ -39,6 +39,13 @@ self.addEventListener('activate', event => {
         })
     );
     self.clients.claim();
+});
+
+// Listen for skipWaiting message from the page
+self.addEventListener('message', event => {
+    if (event.data && event.data.action === 'skipWaiting') {
+        self.skipWaiting();
+    }
 });
 
 // Fetch event - Network first, fallback to cache

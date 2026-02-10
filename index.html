@@ -21,6 +21,7 @@
         <header class="header">
             <div class="header-top">
                 <span class="greeting" id="greeting">Selamat Pagi</span>
+                <span class="greeting-name" id="greetingName"></span>
                 <h1>💰</h1>
             </div>
             <div class="balance-card">
@@ -209,6 +210,23 @@
                         <button class="btn btn-outline" id="exportBtn">
                             📤 Export ke CSV
                         </button>
+                    </div>
+                </div>
+
+                <!-- Settings -->
+                <div class="card">
+                    <div class="card-header clickable" id="toggleSettings">
+                        <h3>⚙️ Pengaturan</h3>
+                        <span class="chevron">›</span>
+                    </div>
+                    <div id="settingsSection" class="collapsible">
+                        <div class="form-group">
+                            <label for="settingsName">Nama Kamu</label>
+                            <div class="settings-name-group">
+                                <input type="text" id="settingsName" placeholder="Masukkan nama kamu">
+                                <button class="btn btn-primary btn-sm" id="saveNameBtn">Simpan</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -522,20 +540,77 @@
                 </div>
             </div>
         </div>
+
+        <!-- Name Welcome Modal -->
+        <div class="modal" id="nameModal">
+            <div class="modal-content modal-small">
+                <div class="welcome-icon">👋</div>
+                <h3>Selamat Datang!</h3>
+                <p class="modal-subtitle">Siapa nama kamu?</p>
+                <form id="nameForm">
+                    <div class="form-group">
+                        <input type="text" id="userName" required placeholder="Masukkan nama kamu" autocomplete="off">
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" style="width:100%">Mulai 🚀</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Update Notification Toast -->
+        <div class="update-toast" id="updateToast">
+            <div class="update-toast-content">
+                <span class="update-toast-icon">🔄</span>
+                <span class="update-toast-text">Versi baru tersedia!</span>
+                <button class="btn btn-primary btn-sm" id="updateBtn">Update</button>
+                <button class="update-toast-close" id="closeUpdateToast">&times;</button>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/db.js"></script>
     <script src="js/app.js"></script>
     <script>
-        // Register Service Worker
+        // Register Service Worker with update detection
+        let newWorker;
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('Service Worker registered'))
+                    .then(reg => {
+                        console.log('Service Worker registered');
+                        // Check for updates
+                        reg.addEventListener('updatefound', () => {
+                            newWorker = reg.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // New version available
+                                    document.getElementById('updateToast').classList.add('show');
+                                }
+                            });
+                        });
+                    })
                     .catch(err => console.log('Service Worker registration failed:', err));
             });
+
+            // Handle controller change (reload when update activates)
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                window.location.reload();
+            });
         }
+
+        // Update button click
+        document.getElementById('updateBtn').addEventListener('click', () => {
+            if (newWorker) {
+                newWorker.postMessage({ action: 'skipWaiting' });
+            }
+        });
+
+        // Close update toast
+        document.getElementById('closeUpdateToast').addEventListener('click', () => {
+            document.getElementById('updateToast').classList.remove('show');
+        });
     </script>
 </body>
 

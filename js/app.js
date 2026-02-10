@@ -18,6 +18,14 @@ class App {
         this.bindEvents();
         this.setDefaultDate();
         await this.refresh();
+        this.checkFirstVisit();
+    }
+
+    checkFirstVisit() {
+        const name = localStorage.getItem('userName');
+        if (!name) {
+            this.openModal('nameModal');
+        }
     }
 
     setGreeting() {
@@ -27,6 +35,13 @@ class App {
         else if (hour >= 15 && hour < 18) greeting = 'Selamat Sore';
         else if (hour >= 18 || hour < 5) greeting = 'Selamat Malam';
         document.getElementById('greeting').textContent = greeting;
+
+        // Add name to greeting
+        const name = localStorage.getItem('userName');
+        const nameEl = document.getElementById('greetingName');
+        if (name && nameEl) {
+            nameEl.textContent = name;
+        }
     }
 
     bindEvents() {
@@ -100,6 +115,40 @@ class App {
 
         // Export
         document.getElementById('exportBtn').addEventListener('click', () => this.exportData());
+
+        // Settings
+        document.getElementById('toggleSettings').addEventListener('click', () => this.toggleSection('settingsSection'));
+
+        // Name form (first visit)
+        document.getElementById('nameForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('userName').value.trim();
+            if (name) {
+                localStorage.setItem('userName', name);
+                this.setGreeting();
+                this.closeModal('nameModal');
+            }
+        });
+
+        // Save name from settings
+        document.getElementById('saveNameBtn').addEventListener('click', () => {
+            const name = document.getElementById('settingsName').value.trim();
+            if (name) {
+                localStorage.setItem('userName', name);
+                this.setGreeting();
+                document.getElementById('settingsName').value = name;
+                // Quick feedback animation
+                const btn = document.getElementById('saveNameBtn');
+                btn.textContent = '✓';
+                setTimeout(() => btn.textContent = 'Simpan', 1500);
+            }
+        });
+
+        // Load name into settings input
+        const savedName = localStorage.getItem('userName');
+        if (savedName) {
+            document.getElementById('settingsName').value = savedName;
+        }
     }
 
     toggleSection(id) {
